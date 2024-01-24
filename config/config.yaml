@@ -1,0 +1,89 @@
+mapper:
+  map_name: 'potsdam'
+  map_boundary: [6000, 6000] # [w, h] pixel
+  ground_resolution: [0.15, 0.15] # [0.15, 0.15]
+  class_number: 7
+  map_continuous_sensor_stream: true
+
+simulator:
+  name: 'potsdam'
+  task: 'classification' # classification
+
+  ###------ potsdam simulator ------###
+  potsdam:
+    path_to_orthomosaic: worlds/potsdam/RGB
+    path_to_anno: worlds/potsdam/Labels/semantic_segmentation
+    # -----------------------
+    # please refer to https://www2.isprs.org/commissions/comm2/wg4/benchmark/2d-sem-label-potsdam/
+    # -----------------------  
+    ortho_tile_list: [['2_10', '2_11', '2_12'],
+                     ['3_10', '3_11', '3_12'],
+                     ['4_10', '4_11', '4_12']]
+    resize_flag: true
+    resize_factor: 3 # ratio to original tile
+    gsd: 0.15 # original tile has 6000 x 6000 with 0.05 meter/pixel gsd
+    world_range: [6000, 6000] # [w, h] pixel
+    sensor:
+      orientation: 'downward'
+      vertical_displacement: 0.0
+      resolution: [400, 400] # [w, h] pixel
+      angle: [45, 45] # [w, h] degree
+      frequency: 0.1 # [Hz]
+
+network:
+  path_to_config: bayesian_erfnet/agri_semantics/config/potsdam.yaml
+  path_to_checkpoint: bayesian_erfnet/agri_semantics/models/pretrained/erfnet_all_05_cityscapes.ckpt
+
+notifications:
+  telegram:
+    is_used: false
+    verbose: true
+  slack:
+    is_used: true
+    verbose: true
+    icon: ":robot_face:"
+
+logging:
+  verbose: true
+
+annotations:
+  human:
+    use_human_labels: true
+    uncertainty_source: "prediction" # map, prediction
+    sparse_annotations: true
+    pixels_per_image: 1000
+    sampling_method:
+      name: "region_impurity_random" # random, uncertainty_random, region_uncertainty_random, random_uncertainty, region_impurity, region_impurity_random
+      pixel_share: 0.05 # [0, 1]
+      kernel_size: 3
+  pseudo:
+    use_pseudo_labels: true
+    fine_tuning: false
+    map_replay: false
+    uncertainty_threshold: 10.0
+    uncertainty_source: "map" # map, prediction
+    image_source: "in_between" # waypoint, in_between
+    sparse_annotations: true
+    min_pixels_per_image: 1000
+    max_pixels_per_image: 1000
+    sampling_method:
+      name: "uncertainty_random" # random, uncertainty_random, random_uncertainty, distribution_alignment
+      pixel_share: 0.05 # [0, 1]
+
+planner:
+  objective_fn: "epistemic_uncertainty" # epistemic_uncertainty
+  uav_specifications:
+    max_v: 2.0
+    max_a: 2.0
+  informed_map_prior: true
+  num_missions: 10
+  budget: 1800.0
+  altitude: 30.0
+  starting_position: "top_left" # top_left
+  type: "frontier" # coverage, frontier
+  coverage:
+    step_sizes: [30.0, 50.0, 70.0]
+  frontier:
+    step_size: 100
+    sensor_angle: [45, 45]
+    sensor_resolution: [400, 400]

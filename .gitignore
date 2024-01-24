@@ -23,6 +23,7 @@ wheels/
 share/python-wheels/
 *.egg-info/
 .installed.cfg
+rm -rf bayesian_erfnet/agri_semantics/datasets/flightmare/
 *.egg
 MANIFEST
 
@@ -159,7 +160,6 @@ outcmaes/
 
 # Model training
 experiments/
-results/
 
 # Secret environments variables
 set_credentials.sh
@@ -171,5 +171,11 @@ al_ipp_extension_data/
 # Flightmare ROS workspace
 flightmare_ws/
 
-# ignore third-party motion_planning repo
-motion_planners/
+# ignore scripts to generate plots
+plots/
+
+# intermediate results
+results/
+figures/
+submission/
+
